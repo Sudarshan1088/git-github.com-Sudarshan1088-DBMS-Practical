@@ -1,0 +1,63 @@
+-- 1. Create Database 
+CREATE DATABASE StudentDB; 
+USE StudentDB; 
+-- 2. Drop old tables if exist (for clean run) 
+DROP TABLE IF EXISTS Stud_Marks; 
+DROP TABLE IF EXISTS Result; 
+-- 3. Create Tables 
+CREATE TABLE Stud_Marks(  
+Roll INT PRIMARY KEY,  
+Name VARCHAR(30),  
+Total_Marks INT  
+); 
+CREATE TABLE Result(  
+Roll INT,  
+Name VARCHAR(30),  
+Class VARCHAR(30)  
+); 
+-- 4. Drop procedure if already exists 
+DROP PROCEDURE IF EXISTS proc_Grade; 
+-- 5. Create Procedure 
+DELIMITER $$ 
+CREATE PROCEDURE proc_Grade(IN r INT, IN n VARCHAR(30), IN m INT) 
+BEGIN 
+    DECLARE c VARCHAR(30); 
+ 
+    IF m BETWEEN 990 AND 1500 THEN  
+        SET c = 'Distinction'; 
+    ELSEIF m BETWEEN 900 AND 989 THEN  
+        SET c = 'First Class'; 
+    ELSEIF m BETWEEN 825 AND 899 THEN  
+        SET c = 'Higher Second Class'; 
+    ELSE  
+        SET c = 'Fail'; 
+    END IF; 
+ 
+    INSERT INTO Stud_Marks VALUES(r, n, m); 
+    INSERT INTO Result VALUES(r, n, c); 
+ 
+-- Output message 
+    SELECT CONCAT(n, ' -> ', c) AS Grade_Info; 
+END$$ 
+DELIMITER ; 
+ 
+-- 6. Drop function if exists 
+DROP FUNCTION IF EXISTS fun_TotalStudents; 
+-- 7. Create Function 
+DELIMITER $$ 
+CREATE FUNCTION fun_TotalStudents(cls VARCHAR(30)) 
+RETURNS INT 
+DETERMINISTIC 
+BEGIN 
+DECLARE cnt INT; 
+SELECT COUNT(*) INTO cnt FROM Result WHERE Class = cls; 
+RETURN cnt; 
+END$$ 
+DELIMITER ; 
+-- 8. Call Procedure (Insert Students) 
+CALL proc_Grade(101, 'Ketan', 1200); 
+CALL proc_Grade(102, 'Ravi', 950); 
+CALL proc_Grade(103, 'Sneha', 880); 
+CALL proc_Grade(104, 'Priya', 700); 
+-- 9. Use Function 
+SELECT fun_TotalStudents('Distinction') AS Distinction_Count;

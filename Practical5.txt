@@ -1,0 +1,99 @@
+-- Create Database 
+CREATE DATABASE CompanyDB; 
+USE CompanyDB; 
+-- Department Table  
+CREATE TABLE Department (  
+    DeptID INT PRIMARY KEY,  
+    DeptName VARCHAR(100) NOT NULL  
+);
+-- Employee Table  
+CREATE TABLE Employee (  
+    EmpID INT PRIMARY KEY,  
+    EmpName VARCHAR(100) NOT NULL,  
+    Salary DECIMAL(10, 2),  
+    DeptID INT, 
+    FOREIGN KEY (DeptID) REFERENCES Department(DeptID)  
+);  
+-- Project Table  
+CREATE TABLE Project (  
+    ProjectID INT PRIMARY KEY,  
+    ProjectName VARCHAR(100) NOT NULL,  
+    Budget DECIMAL(15, 2)  
+); 
+-- Employee_Project Table (many-to-many) 
+CREATE TABLE Employee_Project (  
+EmpID INT,  
+ProjectID INT,  
+PRIMARY KEY (EmpID, ProjectID),  
+FOREIGN KEY (EmpID) REFERENCES Employee(EmpID),  
+FOREIGN KEY (ProjectID) REFERENCES Project(ProjectID)  
+);  
+-- Insert Departments  
+INSERT INTO Department VALUES  
+(1, 'HR'),  
+(2, 'Finance'),  
+(3, 'IT');  
+-- Insert Employees  
+INSERT INTO Employee VALUES  
+(101, 'Alice', 75000, 3),  
+(102, 'Bob', 55000, 2),  
+(103, 'Charlie', 60000, 3),  
+(104, 'David', 50000, NULL); 
+-- employee without dept -- Insert Projects  
+INSERT INTO Project VALUES  
+(201, 'Project A', 150000),  
+(202, 'Project B', 90000);  
+--Employee_Project assignments  
+INSERT INTO Employee_Project VALUES  
+(101, 201),  
+(102, 202),  
+(103, 201);  
+--1. INNER JOIN  
+SELECT E.EmpName, D.DeptName  
+FROM Employee E  
+INNER JOIN Department D ON E.DeptID = D.DeptID;  
+--2. LEFT JOIN  
+SELECT E.EmpName, D.DeptName  
+FROM Employee E  
+LEFT JOIN Department D ON E.DeptID = D.DeptID;  
+--3. RIGHT JOIN  
+SELECT E.EmpName, D.DeptName  
+FROM Employee E  
+RIGHT JOIN Department D ON E.DeptID = D.DeptID;  
+--4. FULL OUTER JOIN (simulate in MySQL using UNION) 
+SELECT E.EmpName, D.DeptName  
+FROM Employee E  
+LEFT JOIN Department D ON E.DeptID = D.DeptID 
+UNION 
+SELECT E.EmpName, D.DeptName  
+FROM Employee E  
+RIGHT JOIN Department D ON E.DeptID = D.DeptID; 
+--5. CROSS JOIN  
+SELECT E.EmpName, P.ProjectName  
+FROM Employee E CROSS JOIN Project P;  
+--6. Subquery: Employees in 'IT'  
+SELECT EmpName  
+FROM Employee  
+WHERE DeptID = (SELECT DeptID FROM Department WHERE DeptName = 'IT');  
+--7. Subquery with IN: employees on projects with budget > 100000  
+SELECT EmpName  
+FROM Employee  
+WHERE EmpID IN (  
+SELECT EP.EmpID  
+FROM Employee_Project EP  
+JOIN Project P ON EP.ProjectID = P.ProjectID  
+WHERE P.Budget > 100000 
+);  
+--8. Subquery with EXISTS: projects with assigned employees  
+SELECT ProjectName  
+FROM Project P  
+WHERE EXISTS (  
+SELECT 1 FROM Employee_Project EP WHERE EP.ProjectID = P.ProjectID 
+);  
+--9. Create view for high earning employees  
+CREATE VIEW HighEarners AS  
+SELECT EmpName, Salary, DeptID  
+FROM Employee  
+WHERE Salary > 60000;  
+--0. Select from the view  
+SELECT * FROM HighEarners;
