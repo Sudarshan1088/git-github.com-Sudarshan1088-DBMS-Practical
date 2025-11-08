@@ -1,0 +1,89 @@
+-- Create a new database 
+CREATE DATABASE IF NOT EXISTS CompanyDB; 
+USE CompanyDB; 
+DROP TABLE IF EXISTS Employee_Project; 
+DROP TABLE IF EXISTS Employee; 
+DROP TABLE IF EXISTS Department; 
+-- Create Department table 
+CREATE TABLE Department ( 
+DeptID INT PRIMARY KEY, 
+DeptName VARCHAR(50) NOT NULL 
+); 
+-- Create Employee table 
+CREATE TABLE Employee ( 
+EmpID INT PRIMARY KEY, 
+EmpName VARCHAR(50) NOT NULL, 
+Salary DECIMAL(10,2) NOT NULL, 
+DeptID INT, 
+JoiningDate DATE, 
+FOREIGN KEY (DeptID) REFERENCES Department(DeptID) 
+);
+ -- Create Employee_Project table (for EXISTS query demo) 
+CREATE TABLE Employee_Project ( 
+EmpID INT, 
+ProjectName VARCHAR(100), 
+FOREIGN KEY (EmpID) REFERENCES Employee(EmpID) 
+); 
+-- Insert Departments 
+INSERT INTO Department (DeptID, DeptName) VALUES (1, 'HR'); 
+INSERT INTO Department (DeptID, DeptName) VALUES (2, 'Finance'); 
+INSERT INTO Department (DeptID, DeptName) VALUES (3, 'IT'); -- Insert Employees 
+INSERT INTO Employee (EmpID, EmpName, Salary, DeptID, JoiningDate)  
+VALUES (101, 'Alice', 70000, 3, '2021-01-15'); 
+INSERT INTO Employee (EmpID, EmpName, Salary, DeptID, JoiningDate)  
+VALUES (102, 'Bob', 55000, 2, '2020-05-10'); 
+INSERT INTO Employee (EmpID, EmpName, Salary, DeptID, JoiningDate)  
+VALUES (103, 'Charlie', 60000, 3, '2019-07-23'); 
+-- Insert some Employee_Project data 
+INSERT INTO Employee_Project (EmpID, ProjectName) VALUES (101, 'AI Project'); 
+INSERT INTO Employee_Project (EmpID, ProjectName) VALUES (103, 'Finance Tracker'); 
+-- 1. Employees with salary > 60000 
+SELECT EmpID, EmpName, Salary  
+FROM Employee  
+WHERE Salary > 60000; 
+-- 2. Employees joined after 2020-01-01, ordered by salary 
+SELECT EmpName, JoiningDate, Salary  
+FROM Employee  
+WHERE JoiningDate > '2020-01-01' 
+ORDER BY Salary DESC; 
+-- 3. Increase salary of IT employees by 10% 
+UPDATE Employee  
+SET Salary = Salary * 1.10 
+WHERE DeptID = (SELECT DeptID FROM Department WHERE DeptName = 'IT'); 
+-- 4. Delete employees with salary < 50000 
+DELETE FROM Employee  
+WHERE Salary < 50000; 
+-- 5. Employees whose name starts with A or B 
+SELECT EmpID, EmpName  
+FROM Employee 
+WHERE EmpName LIKE 'A%' OR EmpName LIKE 'B%'; 
+-- 6. Total salary per department 
+SELECT D.DeptName, SUM(E.Salary) AS TotalSalary 
+FROM Employee E 
+JOIN Department D ON E.DeptID = D.DeptID 
+GROUP BY D.DeptName; 
+-- 7. Employees that exist in Employee_Project table 
+SELECT EmpName  
+FROM Employee E 
+WHERE EXISTS ( 
+SELECT 1  
+FROM Employee_Project EP  
+WHERE EP.EmpID = E.EmpID 
+); 
+-- 8. Employees from IT or Finance 
+SELECT EmpName, DeptID  
+FROM Employee  
+WHERE DeptID = (SELECT DeptID FROM Department WHERE DeptName = 'IT') 
+UNION 
+SELECT EmpName, DeptID  
+FROM Employee  
+WHERE DeptID = (SELECT DeptID FROM Department WHERE DeptName = 'Finance');
+-- 9. Top 3 highest paid employees 
+SELECT EmpName, Salary  
+FROM Employee  
+ORDER BY Salary DESC 
+LIMIT 3; 
+-- 10. Employees with salary between 55000 and 70000 
+SELECT EmpName, Salary  
+FROM Employee  
+WHERE Salary BETWEEN 55000 AND 70000; 

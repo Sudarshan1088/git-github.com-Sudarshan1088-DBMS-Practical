@@ -8,14 +8,16 @@ Customer_ID INT PRIMARY KEY,
 Name VARCHAR(50) NOT NULL,  
 Email VARCHAR(100) UNIQUE,  
 Phone VARCHAR(15) NOT NULL,   
-Address VARCHAR(200) -- Create Restaurant Table 
+Address VARCHAR(200) 
+-- Create Restaurant Table 
 CREATE TABLE Restaurant  
 ( 
 Restaurant_ID INT PRIMARY KEY,  
 Name VARCHAR(50) NOT NULL,  
 Location VARCHAR(100),  
 Contact VARCHAR(15) 
-);  -- Create Orders Table 
+);  
+-- Create Orders Table 
 CREATE TABLE Orders  
 ( 
 );  
