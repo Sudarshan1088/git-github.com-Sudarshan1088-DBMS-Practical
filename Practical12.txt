@@ -1,0 +1,47 @@
+use shopDB;   
+db.createCollection("shop");   
+db.orders.insertMany([   
+{   
+order_id: 101, cust_id: 1, cust_name: "Rahul Sharma", phone_no: ["9876543210", 
+"9123456789"], email_id: "rahul@gmail.com", item_name: "Laptop", DtOfOrder: new 
+Date("2025-09-01"), quantity: 1, amount: 55000, status: "P"   
+},   
+{   
+order_id: 102, cust_id: 2, cust_name: "Priya Verma", phone_no: ["9998887777"], 
+item_name: "Mobile", DtOfOrder: new Date("2025-09-03"), quantity: 2, amount: 30000, 
+status: "D"   
+},   
+{   
+order_id: 103, cust_id: 1, cust_name: "Rahul Sharma", phone_no: ["9876543210"], 
+email_id: "rahul@gmail.com", item_name: "Headphones", DtOfOrder: new Date("2025-09
+05"), quantity: 1, amount: 2000, status: "D"   
+},   
+{   
+order_id: 104, cust_id: 3, cust_name: "Amit Kumar", phone_no: ["9812345678"], 
+item_name: "Tablet", DtOfOrder: new Date("2025-09-06"), quantity: 1, amount: 15000, 
+status: "P"   
+}   
+]);   
+// a) Find total sales amount (delivered orders only)   
+db.orders.aggregate([   
+{ $match: { status: "D" } },   
+{ $group: { _id: null, totalSales: { $sum: "$amount" } } }   
+]);   
+// b) Total amount spent by each customer   
+db.orders.aggregate([   
+{ $group: { _id: "$cust_name", totalAmount: { $sum: "$amount" } } }   
+]);   
+// c) Count of orders by status   
+db.orders.aggregate([   
+{ $group: { _id: "$status", countOrders: { $sum: 1 } } }   
+]);   
+// d) Average order amount   
+db.orders.aggregate([   
+{ $group: { _id: null, avgAmount: { $avg: "$amount" } } }   
+]);   
+// a) Create index on cust_id   
+db.orders.createIndex({ cust_id: 1 });   
+// b) Create compound index on status and DtOfOrder   
+db.orders.createIndex({ status: 1, DtOfOrder: -1 });   
+// c) Show all indexes   
+db.orders.getIndexes();

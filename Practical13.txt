@@ -1,0 +1,140 @@
+import com.mongodb.MongoClient; 
+import com.mongodb.client.MongoCollection; 
+import com.mongodb.client.MongoDatabase; 
+import com.mongodb.client.result.DeleteResult; 
+import com.mongodb.client.result.UpdateResult; 
+import org.bson.Document; 
+import org.bson.types.ObjectId; 
+import java.util.Scanner; 
+public class EmployeeCRUD { 
+static MongoClient client; 
+static MongoDatabase db; 
+static MongoCollection<Document> collection; 
+static Scanner sc = new Scanner(System.in); 
+// Database Connection  
+public static void connectDB() { 
+client = new MongoClient("localhost", 27017);  // Connect to MongoDB 
+db = client.getDatabase("companyDB");          
+// Database name 
+collection = db.getCollection("employees");    // Collection name 
+} 
+    //CRUD Functions  
+ 
+    // Add Employee 
+    public static void addEmployee() { 
+        System.out.print("Enter employee name: "); 
+        String name = sc.nextLine(); 
+        System.out.print("Enter employee age: "); 
+        int age = Integer.parseInt(sc.nextLine()); 
+        System.out.print("Enter department: "); 
+        String dept = sc.nextLine(); 
+ 
+        Document employee = new Document("name", name) 
+                .append("age", age) 
+                .append("department", dept); 
+ 
+        collection.insertOne(employee); 
+        System.out.println("Employee added successfully!"); 
+    } 
+ 
+    // View Employees 
+    public static void viewEmployees() { 
+        System.out.println("\n--- Employee List ---"); 
+        for (Document emp : collection.find()) { 
+            System.out.println("ID: " + emp.getObjectId("_id") + 
+                    ", Name: " + emp.getString("name") + 
+                    ", Age: " + emp.getInteger("age") + 
+                    ", Department: " + emp.getString("department")); 
+        } 
+    } 
+ 
+    // Edit Employee 
+    public static void editEmployee() { 
+        System.out.print("Enter employee ID to edit: "); 
+        String empId = sc.nextLine(); 
+ 
+        Document emp = collection.find(new Document("_id", new ObjectId(empId))).first(); 
+ 
+        if (emp != null) { 
+            System.out.print("Enter new name (" + emp.getString("name") + "): "); 
+            String name = sc.nextLine(); 
+            if (name.isEmpty()) name = emp.getString("name"); 
+ 
+            System.out.print("Enter new age (" + emp.getInteger("age") + "): "); 
+            String ageStr = sc.nextLine(); 
+            int age = ageStr.isEmpty() ? emp.getInteger("age") : Integer.parseInt(ageStr); 
+ 
+            System.out.print("Enter new department (" + emp.getString("department") + "): "); 
+            String dept = sc.nextLine(); 
+            if (dept.isEmpty()) dept = emp.getString("department"); 
+ 
+            UpdateResult result = collection.updateOne( 
+                    new Document("_id", new ObjectId(empId)), 
+                    new Document("$set", new Document("name", name) 
+                            .append("age", age) 
+                            .append("department", dept)) 
+            ); 
+ 
+            if (result.getModifiedCount() > 0) 
+                System.out.println("Employee updated successfully!"); 
+            else 
+                System.out.println("No changes made."); 
+        } else { 
+            System.out.println("Employee not found."); 
+        } 
+    } 
+ 
+    // Delete Employee 
+    public static void deleteEmployee() { 
+        System.out.print("Enter employee ID to delete: "); 
+        String empId = sc.nextLine(); 
+ 
+        DeleteResult result = collection.deleteOne(new Document("_id", new 
+ObjectId(empId))); 
+ 
+        if (result.getDeletedCount() > 0) 
+            System.out.println("Employee deleted successfully!"); 
+        else 
+            System.out.println("Employee not found."); 
+    } 
+ 
+    // Main Menu  
+    public static void menu() { 
+        while (true) { 
+            System.out.println("\n--- MongoDB Employee Management ---"); 
+            System.out.println("1. Add Employee"); 
+            System.out.println("2. View Employees"); 
+            System.out.println("3. Edit Employee"); 
+            System.out.println("4. Delete Employee"); 
+            System.out.println("5. Exit"); 
+ 
+            System.out.print("Enter your choice: "); 
+            String choice = sc.nextLine(); 
+ 
+            switch (choice) { 
+                case "1": 
+                    addEmployee(); 
+                    break; 
+                case "2": 
+                    viewEmployees(); 
+                    break; 
+                case "3": 
+                    editEmployee(); 
+                    break; 
+                case "4": 
+                    deleteEmployee(); 
+                    break; 
+                case "5": 
+                    System.out.println("Exiting program..."); 
+                    client.close(); 
+                    return; 
+                default: 
+                    System.out.println("Invalid choice! Please try again."); 
+            } 
+        } 
+    } 
+    public static void main(String[] args) { 
+        connectDB(); 
+        menu(); 
+    } 
+}
