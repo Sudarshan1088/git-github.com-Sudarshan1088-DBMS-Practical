@@ -1,0 +1,37 @@
+// 1. Create Database 
+use ArticlesDB; 
+//2. Create Collection 
+db.createCollection("Articles"); 
+3. Insert Documents 
+db.Articles.insertMany([ 
+{ Title: "MongoDB Basics", Content: "Introduction to MongoDB", Author: "Ketan", Date: 
+"2025-09-29", Tags: ["database","nosql"] }, 
+{ Title: "CRUD in MongoDB", Content: "Create, Read, Update, Delete explained", Author: 
+"Riya", Date: "2025-09-28", Tags: ["crud","mongodb"] }, 
+{ Title: "Advanced Queries", Content: "Using logical operators", Author: "Ketan", Date: 
+"2025-09-27", Tags: ["operators","query"] } 
+]); 
+// 4. Display All Documents 
+db.Articles.find().pretty(); 
+// 5. Find Articles by Author 
+db.Articles.find({ Author: "Ketan" }); 
+// 6. Using Logical Operators 
+// Example: Find articles by Ketan OR with tag "crud" 
+db.Articles.find({ $or: [ { Author: "Ketan" }, { Tags: "crud" } ] }); 
+// Example: Find articles NOT written by Riya 
+db.Articles.find({ Author: { $not: { $eq: "Riya" } } }); 
+// 7. Update Document 
+db.Articles.updateOne( 
+{ Title: "MongoDB Basics" }, 
+{ $set: { Content: "MongoDB is a NoSQL Database", Tags: ["mongodb","intro"] } } 
+); 
+// 8. Save Method (Insert or Update) 
+// If document exists with _id, it will update; otherwise insert 
+db.Articles.save( 
+{ _id: ObjectId("652abc1234567890abcdef12"), Title: "CRUD in MongoDB", Content: 
+"Updated with save()", Author: "Riya" } 
+); 
+// 9. Delete Document 
+db.Articles.deleteOne({ Title: "Advanced Queries" }); 
+// 10. Delete All Documents (if needed) 
+db.Articles.deleteMany({});
